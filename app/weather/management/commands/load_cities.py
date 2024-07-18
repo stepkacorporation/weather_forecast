@@ -19,17 +19,29 @@ class Command(BaseCommand):
         extract_to = '.'
 
         self.stdout.write(f'Загрузка файла {url}...')
-        self.download_file(url, zip_file_path)
+        try:
+            self.download_file(url, zip_file_path)
+        except requests.RequestException as error:
+            self.stdout.write(self.style.ERROR(f'Ошибка при загрузке файла: {error}'))
 
         self.stdout.write(f'Распаковка файла "{zip_file_path}"...')
-        self.unzip_file(zip_file_path, extract_to)
+        try:
+            self.unzip_file(zip_file_path, extract_to)
+        except zipfile.BadZipFile as error:
+            self.stdout.write(self.style.ERROR(f'Ошибка при распаковке файла: {error}'))
 
         txt_file_path = zip_file_path.split('.')[0] + '.txt'
         self.stdout.write(f'Загрузка данных в БД из файла "{txt_file_path}"...')
-        self.load_cities_from_file(txt_file_path)
+        try:
+            self.load_cities_from_file(txt_file_path)
+        except Exception as error:
+            self.stdout.write(self.style.ERROR(f'Ошибка при загрузке данных в БД: {error}'))
 
         self.stdout.write('Очистка ненужных файлов...')
-        self.cleanup(zip_file_path, txt_file_path)
+        try:
+            self.cleanup(zip_file_path, txt_file_path)
+        except OSError as error:
+            self.stdout.write(self.style.ERROR(f'Ошибка при удалении файлов: {error}'))
 
         self.stdout.write(self.style.SUCCESS('Готово!'))
 
