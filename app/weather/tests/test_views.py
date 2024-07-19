@@ -1,15 +1,16 @@
+import json
+
 from django.test import TestCase, RequestFactory, Client
 from django.urls import reverse
 from django.http import JsonResponse
-from unittest.mock import patch, MagicMock
 
 from ..models import City
-from ..views import city_search, CityAutocomplete, get_weather_data
+from ..views import CityAutocomplete
 
 
 class CitySearchViewTest(TestCase):
     def setUp(self):
-        self.factory = RequestFactory()
+        self.client = Client()
         self.city1 = City.objects.create(
             name='Москва',
             type_of_region='г',
@@ -20,18 +21,16 @@ class CitySearchViewTest(TestCase):
         )
 
     def test_city_search_view(self):
-        request = self.factory.get(reverse('city-search'))
-        response = city_search(request)
+        response = self.client.get(reverse('city-search'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'weather/index.html')
 
     def test_city_search_view_with_last_cities(self):
-        request = self.factory.get(reverse('city-search'))
-        request.COOKIES['last_city_ids'] = str(self.city1.id)
-        response = city_search(request)
+        self.client.cookies['last_city_ids'] = str(self.city1.id)
+        response = self.client.get(reverse('city-search'))
         self.assertEqual(response.status_code, 200)
-        self.assertIn('last_cities', response.context_data)
-        self.assertEqual(response.context_data['last_cities'].first(), self.city1)
+        self.assertIn('last_cities', response.context)
+        self.assertEqual(response.context['last_cities'].first(), self.city1)
 
 
 class CityAutocompleteViewTest(TestCase):
@@ -59,6 +58,6 @@ class CityAutocompleteViewTest(TestCase):
         response = CityAutocomplete.as_view()(request)
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response, JsonResponse)
-        city_list = response.json()
+        city_list = json.loads(response.content)
         self.assertEqual(len(city_list), 1)
         self.assertEqual(city_list[0]['text'], str(self.city1))
