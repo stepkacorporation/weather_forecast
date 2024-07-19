@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Прогноз погоды{% endblock title %}
+
+{% block head %}
+
+<style>
+body {
+    background: #fff;
+    color: #444;
+    font-family: "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 15px 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    font-weight:700;
+}
+/*--------------------------------------------------------------
+# Weather Card
+--------------------------------------------------------------*/
+.weather__card {
+  width: 800px;
+  padding: 40px 30px;
+  background-color: #EEEEEE;
+  border-radius: 20px;
+  color:#3C4048;
+}
+.weather__card h2 {
+  font-size:120px;
+  font-weight:700;
+  color:#3C4048;
+  line-height: .8;
+}
+.weather__card h3 {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: .8;
+  color:#3C4048;
+}
+.weather__card h5 {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: .1;
+  color:#9D9D9D;
+}
+.weather__card img {
+  width: 120px;
+  height: 120px;
+}
+.weather__card .weather__description {
+  background-color: #fff;
+  border-radius: 25px;
+  padding: 5px 13px;
+  border:0;
+  outline: none;
+  color:#7F8487;
+  font-size: .956rem;
+  font-weight: 400;
+}
+/*--------------------------------------------------------------
+# Weather Status
+--------------------------------------------------------------*/
+.weather__status img {
+  height: 20px;
+  width: 20px;
+  vertical-align:middle;
+}
+.weather__status span {
+  font-weight: 500;
+  color: #3C4048;
+  font-size: .9rem;
+  padding-left: .5rem;
+}
+/*--------------------------------------------------------------
+# Weather Forecast
+--------------------------------------------------------------*/
+.weather__forecast img {
+  height: 25px;
+  width: 25px;
+  vertical-align:middle;
+}
+.weather__forecast span {
+  font-weight: 500;
+  color: #3C4048;
+  font-size: 1rem;
+  padding: 5px 10px;
+}
+
+.weather-history.disabled {
+    pointer-events: none;
+    cursor: default;
+}
+</style>
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h1 class='text-center'>Узнать прогноз погоды</h1>
+    <form method="GET" action="#" class="mb-1">
+        {% crispy form %}
+    </form>
+    
+    <div class="history-container d-flex flex-wrap align-items-center mb-2">
+        <span class="me-2">Вы искали:</span>
+        <ul id="history-list" class="list-unstyled d-flex flex-wrap mb-0">
+            {% for city in last_cities %}
+                <li class="me-3">
+                    <a href="#" class="weather-history text-decoration-none" data-city-id="{{ city.id }}">
+                        {{ city.name }}
+                    </a>
+                </li>
+            {% empty %}
+                <li>нет истории поиска</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="weather-container" style="display: {% if last_cities %}block{% else %}none{% endif %}">
+
+        <div id="weather-info" class="d-flex flex-row justify-content-center align-items-center">
+            <div class="weather__card">
+                <div class="d-flex flex-row justify-content-center align-items-center">
+                    <div class="p-3">
+                        <h2 id="current-temperature"></h2>
+                    </div>
+                    <div class="p-3">
+                        <img id="weather-icon" src="">
+                    </div>
+                    <div class="p-3">
+                        <h5 id="current-date-time"></h5>
+                        <h3 id="city-name"></h3>
+                        <span id="weather-description" class="weather__description"></span>
+                    </div>
+                </div>
+                <div class="weather__status d-flex flex-row justify-content-center align-items-center mt-3">
+                    <div class="p-4 d-flex justify-content-center align-items-center" title="Влажность">
+                        <img src="https://svgur.com/i/oHw.svg">
+                        <span id="humidity"></span>
+                    </div>
+                    <div class="p-4 d-flex justify-content-center align-items-center" title="Давление">
+                        <img src="https://svgur.com/i/oH_.svg">
+                        <span id="pressure"></span>
+                    </div>
+                    <div class="p-4 d-flex justify-content-center align-items-center" title="Скорость ветра">
+                        <img src="https://svgur.com/i/oKS.svg">
+                        <span id="wind-speed"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="weather__forecast d-flex flex-row justify-content-center align-items-center mt-3">
+            <div id="forecast-day-0" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Вс</span>
+                <img src="">
+                <span></span>
+            </div>
+
+            <div id="forecast-day-1" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Пн</span>
+                <img src="">
+                <span></span>
+            </div>
+
+            <div id="forecast-day-2" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Вт</span>
+                <img src="">
+                <span></span>
+            </div>
+
+            <div id="forecast-day-3" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Ср</span>
+                <img src="">
+                <span></span>
+            </div>
+
+            <div id="forecast-day-4" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Чт</span>
+                <img src="">
+                <span></span>
+            </div>
+
+            <div id="forecast-day-5" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Пт</span>
+                <img src="">
+                <span></span>
+            </div>
+
+            <div id="forecast-day-6" class="p-4 d-flex flex-column justify-content-center align-items-center">
+                <span>Сб</span>
+                <img src="">
+                <span></span>
+            </div>
+        </div>
+
+    </div>
+    
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    $(document).ready(() => {
+        const updateHistoryList = (cityName, cityId) => {
+            const historyList = $('#history-list');
+            const existingCities = historyList.find('li a[data-city-id]');
+            let cityExists = false;
+        
+            existingCities.each(function() {
+                if ($(this).data('city-id') === parseInt(cityId)) {
+                    $(this).parent().remove();
+                    cityExists = true;
+                }
+            });
+        
+            const newCityItem = `<li class="me-3"><a href="#" class="weather-history text-decoration-none" data-city-id="${cityId}">${cityName}</a></li>`;
+            historyList.prepend(newCityItem);
+            
+            if (existingCities.length >= 7 && !cityExists) {
+                historyList.find('li').last().remove();
+            }
+        
+            if (historyList.children().length === 0) {
+                historyList.append('<li>нет истории поиска</li>');
+            } else {
+                historyList.find('li:contains("нет истории поиска")').remove();
+            }
+        };
+
+        window.fetchWeatherData = (city_id) => {
+            $.ajax({
+                url: '{% url "get-weather-data" %}',
+                data: {
+                    city_id: city_id
+                },
+                success: function (data) {
+                    displayWeatherData(data);
+                    updateHistoryList(data.city, city_id);
+                    
+                    let selectElement = $('.city-select');
+                    let optionExists = selectElement.find(`option[value="${city_id}"]`).length > 0;
+                    
+                    if (!optionExists) {
+                        selectElement.append(new Option(data.city_full_name, city_id));
+                    }
+                    
+                    selectElement.val(city_id).trigger('change.select2');
+                    
+                    $('#history-list .weather-history').removeClass('disabled').removeClass('text-dark');
+                    $(`#history-list .weather-history[data-city-id="${city_id}"]`).addClass('disabled').addClass('text-dark');
+
+                    $('#weather-container').show();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Ошибка при получении данных о погоде:', error);
+                }
+            });
+        };
+
+        // Обработка кликов на ссылках истории запросов
+        $(document).on('click', '.weather-history', function(e) {
+            e.preventDefault();
+            const cityId = $(this).data('city-id');
+            fetchWeatherData(cityId);
+        });
+
+        // Функция для загрузки данных о последнем посещенном городе
+        const loadLastCityWeather = () => {
+            const lastCityId = "{{ last_city.id }}";
+            if (lastCityId) {
+                fetchWeatherData(lastCityId);
+            }
+        };
+        loadLastCityWeather();
+
+        $('.city-select').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Введите название города или региона',
+            ajax: {
+                url: '{% url "city-autocomplete" %}',
+                dataType: 'json',
+                delay: 250,
+                data: (params) => {
+                    return {
+                        term: params.term
+                    };
+                },
+                processResults: (data) => {
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
+            },
+            language: {
+                noResults: (params) => {
+                    return 'Результатов не найдено';
+                },
+                searching: (params) => {
+                    return 'Поиск...';
+                }
+            }
+        });
+
+        $('.city-select').on('select2:select', (e) => {
+            const data = e.params.data;
+            fetchWeatherData(data.id);
+        });
+
+        weather_code_descriptions = {
+            0: "Ясно",
+            1: "Преимущественно ясно",
+            2: "Переменная облачность",
+            3: "Пасмурно",
+            45: "Туман",
+            48: "Ледяной туман",
+            51: "Легкая морось",
+            53: "Морось",
+            55: "Сильная морось",
+            80: "Легкие ливни",
+            81: "Ливни",
+            82: "Сильные ливни",
+            61: "Легкий дождь",
+            63: "Дождь",
+            65: "Сильный дождь",
+            56: "Легкая ледяная морось",
+            57: "Ледяная морось",
+            66: "Легкий ледяной дождь",
+            67: "Ледяной дождь",
+            77: "Снежные зерна",
+            85: "Легкие снежные ливни",
+            86: "Снежные ливни",
+            71: "Легкий снег",
+            73: "Снег",
+            75: "Сильный снег",
+            95: "Гроза",
+            96: "Гроза с легким градом",
+            99: "Гроза с сильным градом"
+        }
+
+        const displayWeatherData = (data) => {
+            const current_weather_description = weather_code_descriptions[data.current.weather_code];
+            // Заполнение текущей погоды
+            $('#current-temperature').text(data.current.temperature_2m.toFixed(0) + '°');
+            $('#current-date-time').text(formatUnixTimestamp(data.current.time));
+            $('#city-name').text(data.city);
+            $('#weather-description').text(current_weather_description);
+
+            // Заполнение иконки погоды
+            $('#weather-icon').attr('src', '{% static "images/weather_sense/" %}' + data.current.weather_code + '.png').attr('alt', current_weather_description).attr('title', current_weather_description);
+
+            // Заполнение статуса погоды (влажность, давление, скорость ветра)
+            $('#humidity').text(data.current.relative_humidity_2m.toFixed(1) + '%');
+            $('#pressure').text(data.current.pressure_msl.toFixed(2) + ' гПа');
+            $('#wind-speed').text(data.current.wind_speed_10m.toFixed(1) + ' км/ч');
+
+            // Заполнение прогноза на неделю
+            for (let i = 0; i < data.daily.date.length; i++) {
+                const currentDate = new Date();
+                const forecastDate = new Date(data.daily.date[i]);
+                
+                let dayOfWeek;
+                if (i === 0) {
+                    dayOfWeek = 'Сегодня';
+                } else if (i === 1) {
+                    dayOfWeek = 'Завтра';
+                } else {
+                    dayOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][forecastDate.getDay()];
+                }
+
+                const iconUrl = '{% static "images/weather_sense/" %}' + data.daily.weather_code[i] + '.png';
+                const weather_description = weather_code_descriptions[data.daily.weather_code[i]] || "Неизвестно";
+                const maxTemp = data.daily.temperature_2m_max[i].toFixed(0);
+                const minTemp = data.daily.temperature_2m_min[i].toFixed(0);
+
+                $(`#forecast-day-${i}`).html(`
+                    <span>${dayOfWeek}</span>
+                    <img src="${iconUrl}" title="${weather_description}" alt="${weather_description}">
+                    <span>${maxTemp}&deg; / ${minTemp}&deg;</span>
+                `);
+            }
+        }
+
+        const formatUnixTimestamp = (timestamp) => {
+            // Создаем объект Date из Unix timestamp (в миллисекундах)
+            let date = new Date(timestamp * 1000);
+            
+            // Получаем день недели
+            let days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            let dayOfWeek = days[date.getDay()];
+            
+            // Получаем часы и минуты
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            
+            // Формируем строку в нужном формате
+            let formattedTime = `${dayOfWeek}, ${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+            
+            return formattedTime;
+        }
+    });
+</script>
+{% endblock scripts %}

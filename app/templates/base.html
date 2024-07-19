@@ -9,23 +9,16 @@
         <title>{% block title %}{% endblock title %}</title>
         <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
 
-        <!-- Bootstrap -->
-        <link href="{% static "common/css/bootstrap.min.css" %}" type="text/css" rel="stylesheet">
-        <script src="{% static "common/js/bootstrap.bundle.min.js" %}"></script>
-        
+        <link rel="stylesheet" href="{% static 'common/css/bootstrap.min.css' %}" />
+        <link rel="stylesheet" href="{% static 'common/css/select2.min.css' %}" />
+        <link rel="stylesheet" href="{% static 'common/css/select2-bootstrap-5-theme.min.css' %}" />
+
         {% block head %}
         {% endblock head %}
 
     </head>
 
     <body class="d-flex flex-column min-vh-100">
-
-        <header>
-            {% include "header.html" %}
-
-            {% block header %}
-            {% endblock header %}
-        </header>
 
         <main style="min-height: 100vh;" class="d-flex">
             <div class="mt-4 mb-4 flex-grow-1">
@@ -38,7 +31,12 @@
             {% include "footer.html" %}
         </footer>
 
+        <script src="{% static 'common/js/jquery.min.js' %}"></script>
+        <script src="{% static 'common/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'common/js/select2.min.js' %}"></script>
+
         {% block scripts %}
         {% endblock scripts %}
+    
     </body>
 </html>

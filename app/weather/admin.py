@@ -5,5 +5,6 @@ from .models import City
 
 @admin.register(City)
 class CityAdmin(admin.ModelAdmin):
-    list_display = ('name_en', 'name_ru', 'country_code', 'latitude', 'longitude', 'search_count')
-    search_fields = ('name_en', 'name_ru')
+    list_display = ('id', 'name', 'type_of_region', 'region', 'timezone', 'latitude', 'longitude', 'search_count')
+    search_fields = ('name', 'type_of_region', 'region')
+    list_display_links = ('name', 'region')

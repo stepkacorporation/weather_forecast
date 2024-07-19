@@ -4,21 +4,34 @@ from django.db import models
 class City(models.Model):
     """Модель города."""
 
-    name_en = models.CharField(max_length=255, verbose_name='Название (en)')
-    name_ru = models.CharField(max_length=255, verbose_name='Название (ru)', blank=True, null=True)
-    country_code = models.CharField(max_length=255, verbose_name='Код страны')
+    name = models.CharField(max_length=255, verbose_name='Город')
+    type_of_region = models.CharField(max_length=8, verbose_name='Тип региона')
+    region = models.CharField(max_length=255, verbose_name='Регион')
+    timezone = models.CharField(max_length=50, verbose_name='Часовой пояс')
     latitude = models.FloatField(verbose_name='Широта')
     longitude = models.FloatField(verbose_name='Долгота')
     search_count = models.PositiveBigIntegerField(default=0, verbose_name='Кол-во поисковых запросов')
 
     def __str__(self) -> str:
-        if self.name_ru:
-            return f'{self.name_en} ({self.name_ru}), {self.country_code}'
-        return f'{self.name_en}, {self.country_code}'
-    
+        if self.type_of_region == 'Респ':
+            return f'{self.name}, {self.type_of_region.lower()}. {self.region}'
+        if self.type_of_region == 'край':
+            return f'{self.name}, {self.region} {self.type_of_region}'
+        if self.type_of_region == 'обл':
+            return f'{self.name}, {self.region} {self.type_of_region}.'
+        if self.type_of_region == 'г': 
+            if self.name == self.region:
+                return f'{self.name}'
+            return f'{self.region}, {self.name}'
+        if self.type_of_region == 'АО':
+            if self.region == 'Ханты-Мансийский Автономный округ - Югра':
+                return f'{self.name}, {self.region}'
+            return f'{self.name}, {self.region} Автономный округ'
+        return f'{self.name}, {self.type_of_region}, {self.region}'
+
     class Meta:
-        unique_together = ('name_en', 'country_code', 'latitude', 'longitude')
-        ordering = ('name_en', 'name_ru', 'country_code')
+        unique_together = ('name', 'region', 'latitude', 'longitude')
+        ordering = ('name',)
         verbose_name = 'Город'
         verbose_name_plural = 'Города'
 
